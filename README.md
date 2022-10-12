@@ -418,6 +418,59 @@ E.g. after a manual or scripted change was applied, the new layout can be compar
 (Front-End and Back-End DRC)
 ## Day 3 Theory: Introduction to DRC Rules
 
+Recap of silicon manufacturing process and yield.
+All layers should have about the same failure rate, so there is not a single layer responsible for more failures than the rest (reducing the yield). Design rules are not magic numbers, DRC violations MAY produce a working chip, but MAY reduce yield (maybe significantly).
+Manufacturers will reject design that do not pass DRC checks.
+
+- Width rules, most basic rule, violation risks e.g. that a wire rips up.
+- Spacing rules, violation can risk geometries to short together. No runlength rules in SKY130.
+- Wide-spacing rules, higher spacing if a geometry is above a certain size.
+- Notch rules, special case of a spacing rule in fact.
+- Min/Max area rules, avoid "delamination" (metal area becoming detached), can happen if an area is too small.
+- Min hole area rule, only for metal layer(s).
+- Contact cuts, for via manufacture, related to ability to maintain mask alignment. Via must be surounded of metal or metal must extent over via.
+- Local interconnect rules, uncommon layer, Titanium Nitrate, high-resistance so keep li tracks short (about 100x more R than metal1 Aluminium).
+- Off-grid rules, all data must be on a grid of 0.005 um (5 nm) in SKY130.
+- Angle rules, usually only 45 or 90 degrees allowed, manhatten style geometries
+- Seal ring rules, done by Magic
+- Latchup rules, latchup when parasitic pn junction becomes forward biased,not just pn but also pnp and np junctions, can short an entire chip!
+  likelyhood of latchup increased when there are not enough taps, diffusion area by definition forms a pn junction.
+  Tap rules are a little arbitrary but needed nontheless.
+- Antenna rules, needed to avoid electrical device failure due to charge build-up during manufacturing. Caused by long metal tracks which act as antenna, accumulating charge, leading to high voltage, may punch through transistor gates. Requires diodes for discharge. Defined by ratio of metal area to gate area.
+- Stress rules, related to metal delamination, avoid metal cracking during sawing and dicing, mechanical stress, wide metal should be perforated with slots to prevent too much mechanical stress to build up "slotted metal". Usually of no concern for a designer working inside the padframe area.
+- Density rules, related to flatness of metal layers, to achieve good even polishing results, need e.g. ~ 60% metal density. Automated by magic, done by generate_fill.py and wafflefill.py. Analog designers do not want fill patterns, place fill-block layer.
+  Unfortunate routing pitch or metal spacing can prevent fill generation due to spacing rules.
+  Density must also not be too high! Designer may need to get rid of metal in some rare situations. E.g. issue in MPW1 with decap cell.
+- Recommended rules (RR), makes design more robust, increases yield, mostly meaningless in MPW runs, e.g. redundant vias (at least 2 contact cuts), 
+  
+Magic does not alway show the exact manufacturing masks, but aims for ease of layout.
+This can lead to situation were Magic rules seem to not match up with SKY130 design rules. Need to trust Magic on this.
+
+Usually transistor devices/terminals should contact directly up to metal1.
+
+In SKY130 the tap is a dedicated cell.
+
+Front-End rules
+  
+Deep n-well isolation, protect devices against noisy substrate. Deep n-well is surounded by regular n-well, large spacing between deep n-wells.
+
+High voltage rules, high voltage implant, SKY130 allows up to 5 ~ 5.5 V, thicker gate oxide for high voltage devices
+
+Resistors from poly (most common), diff or pwell in dn-well. Special contact requirements, handled by Magic automatically.
+Recommended to use Magic device generator.
+  
+Capacitors, varactors, MOScap, Vertical parallel plate (VPP), metal in metal (MiM)
+MOScap
+VPP (metal-oxide-metal, MOM): stackiong metal layers on top of each other, also interleaved fingers on a metal layer. No reason to use if MiM is available.
+MiM: use these instead of VPP if available, larger C per area than VPP, MiM caps can be stacked for even more C per area, must be rectangular, antenna rules.
+  
+Diodes, on all p-n junctions, mostly parasitic (unwanted), make diode by using correct ID layer.
+
+Some fixed layout devices from foundary which have been characterized, e.g. PNP transistor,
+  
+Rules for test vs production, for experimental design DRC violation may be unavoidable.
+
+ERC electrical rule check, electromigration, overvoltage, thin high-current wires, 
 
 ## Day 3 Labs: DRC rules
 
@@ -440,5 +493,5 @@ E.g. after a manual or scripted change was applied, the new layout can be compar
 
 [1] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
 [2] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
-[3] 
+[3] https://antmicro-skywater-pdk-docs.readthedocs.io/en/latest/rules.html
 [4] https://wikipedia.org, I guess ... why not? 
