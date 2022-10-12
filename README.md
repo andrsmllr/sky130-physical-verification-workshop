@@ -1,15 +1,21 @@
 # sky130-physical-verification-workshop
+
 My notes about the physical verification workshop for the SKY130 PDK held by VSD-IAT in October 2022 .
 
 ---
 
-## Day 1 Introduction to SkyWater SKY130 PDK
+## Day 1 Theory: Introduction to SkyWater SKY130 PDK
 
-...
+Overview of open-source tools, the PDK, layers, devices, etc.
+
+
+## Day 1 Labs: Tool Installation and basic DRC/LVS Design Flow
+
+Setup of tools, project folder, etc., create inverter schematic and run spice simulation
 
 ---
 
-## Day 2 DRC/LVS Theory
+## Day 2 Theory: Introduction to DRC and LVS
 
 Verification to ensure design is functional.
 
@@ -143,21 +149,82 @@ Cannot run LVS down to transistor level, standard cells (considered correct) mus
 
 Compare two layouts by XOR-ing layers/masks. Highlights differences (or changes) between two layouts A and B.
 
+  
+## Day 2 Labs: GDS Read/Write, Extraction, DRC, LVS, XOR
+
+List all input styles known to magic:
+```shell
+% cif listall istyle
+sky130(vendor) sky130() rdlimport
+```
+
+List input style which is currently active in magic:
+```shell
+% cif list istyle
+sky130(vendor)
+```
+
+Load GDS for one of the SKY130 standard cell libraries
+```shell
+% gds read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 3.0
+Library name: sky130_fd_sc_hd
+Reading "sky130_fd_sc_hd__a2111oi_0".
+...
+Reading "sky130_fd_sc_hd__and2b_1".
+```
+
+Get list of available top level cells:
+```shell
+% cellname top
+```
+Or use the cell manager menu under Options > Cell Manager.
+
+The AND2 cell layout will be shown.
+[and2]()
+
+Read the standard cell library again, but this time with the correct istyle.
+```shell
+% cif istyle sky130(vendor)
+CIF input style is now "sky130(vendor)"
+  
+% gds read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 3.0
+Library name: sky130_fd_sc_hd
+Reading "sky130_fd_sc_hd__a2111oi_0".
+...
+Reading "sky130_fd_sc_hd__and2b_1".
+Warning:  cell sky130_fd_sc_hd__and2b_1 already existed before reading GDS!
+```
+
 ---
 
-## Day 3 Front-End and Back-End DRC
+(Front-End and Back-End DRC)
+## Day 3 Theory: Introduction to DRC Rules
+
+
+## Day 3 Labs: DRC rules
 
 ---
 
-## Day 4 Understanding the PNR and Physical Verification (Bonus)
+## Day 4 Theory: Understanding the PNR and Physical Verification
 
+
+## Day 4 Labs: No Labs Today 🥳
+  
 ---
 
-## Day 5 Running LVS
+## Day 5 Fundamentals of LVS
 
+## Day 5 Labs: LVS
+  
 ---
 
 ## References:
 
-[1] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf
-[2] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (down)
+[1] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
+[2] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
+[3] 
+[4] https://wikipedia.org, I guess ... why not? 
