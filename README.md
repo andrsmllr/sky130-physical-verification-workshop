@@ -181,14 +181,16 @@ Get list of available top level cells:
 ```
 Or use the cell manager menu under Options > Cell Manager.
 
-The AND2 cell layout will be shown.
-[and2]()
+The AND2 cell layout will be shown.  
+The cell ports are shown in yellow, which means they are just text labels, not ports as they should be.  
+<img src="images/vsdiat_lab2_magic_cell_and2.PNG" width=612>
+<img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130.PNG" width=612>
 
 Read the standard cell library again, but this time with the correct istyle.
+
 ```shell
 % cif istyle sky130(vendor)
 CIF input style is now "sky130(vendor)"
-  
 % gds read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds
 Warning: Calma reading is not undoable!  I hope that's OK.
 Library written using GDS-II Release 3.0
@@ -199,7 +201,219 @@ Reading "sky130_fd_sc_hd__and2b_1".
 Warning:  cell sky130_fd_sc_hd__and2b_1 already existed before reading GDS!
 ```
 
+The cell ports are shown in dark blue, which means they are correctly identified as ports, as they should be.  
+
+<img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130vendor.PNG" width=612>
+
+To stop Magic from overwriting existing cells when reading a gds file set the noduplicates option:  
+
+```shell
+% gds noduplicates
+0
+% gds noduplicates true
+% gds noduplicates
+1
+```
+
+Now when reading the same GDS file again, the loaded cells will not be replaced.
+
+```shell
+% cif istyle sky130()
+Input style sky130(): scaleFactor=2, multiplier=2
+CIF input style is now "sky130()"
+% gds read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds
+...
+Reading "sky130_fd_sc_hd__and2b_1".
+Warning:  cell sky130_fd_sc_hd__and2b_1 already existed before reading GDS!
+Using pre-existing cell definition
+```
+
+The currently loaded cell is unchanged, as can be seen by the blue color of the cell ports.
+
+<img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130vendor.PNG" width=612>
+
+Select a port in the cell view and get it's index:
+
+```shell
+% port index
+3
+```
+
+Get the first port in the cell and get more info about it:
+
+```shell
+% port first
+1
+% port 1 name
+VPWR
+% port 1 class
+default
+% port 1 use
+default
+```
+
+Most of the attributes return 'default' because the GDS file format does not contain meta data like that.
+The port indeces are a good example to see how this can cause issues.  
+Lets look at the SPICE model for the and2 cell,
+```shell
+$ nano /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
+...
+.subckt sky130_fd_sc_hd__nand2_1 A B VGND VNB VPB VPWR Y
+X0 Y A VPWR VPB sky130_fd_pr__pfet_01v8_hvt w=1e+06u l=150000u
+X1 VPWR B Y VPB sky130_fd_pr__pfet_01v8_hvt w=1e+06u l=150000u
+X2 VGND B a_113_47# VNB sky130_fd_pr__nfet_01v8 w=650000u l=150000u
+X3 a_113_47# A Y VNB sky130_fd_pr__nfet_01v8 w=650000u l=150000u
+.ends
+...
+```
+
+The port index for the output port X in Magic was 3, but in the SPICE model port 3 is assigned to VGND.
+
+Magic can annotate a layout with meta data from LEF and SPICE files. How nice.
+When loading a LEF file for a cell Magic usually will load the abstract view for that cell.
+However, if a cell layout of the same name is already loaded, Magic will only load the meta data from the LEF file and use that to annotate the loaded cell.
+
+```shell
+% lef read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lef/sky130_fd_sc_hd.lef
+Reading LEF data from file /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lef/sky130_fd_sc_hd.lef.
+This action cannot be undone.
+LEF read: Processed 68161 lines.
+% port 1 name
+VPWR
+% port 1 use
+power
+% port 1 class
+bidirectional 
+```
+
+```shell
+% readspice /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
+...
+Annotating cell sky130_fd_sc_hd__inv_4
+Selected cell is sky130_fd_sc_hd__inv_4 (Topmost cell in the window)
+Cell sky130_fd_sc_hd__inv_4 port order was modified.
+% port first
+1
+% port 1 name
+A
+```
+
+Now port 1 is the port named A, no longer VPWR as before, which matches the port order in the SPICE model netlist. Port annotation successful.
+
+LEF always is a library and has no concept of a top cell. LEF files are all about placement and routing, no transistors etc.
+Some meta data, not other.
+
+In a LEF abstract view everything (metal) that isn't a pin is considered to be an obstruction.
+
+Magic path
+```shell
+% path
+Search path for cells is ". /usr/share/pdk/sky130A/libs.ref/sky130_fd_pr/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_io/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hdll/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hs/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hvl/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_lp/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_ls/mag /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_ms/mag /usr/share/pdk/sky130A/libs.ref/sky130_osu_sc/mag /usr/share/pdk/sky130A/libs.ref/sky130_osu_sc_t18/mag /usr/share/pdk/sky130A/libs.ref/sky130_ml_xx_hd/mag /usr/share/pdk/sky130A/libs.ref/sky130_sram_macros/mag"
+Cell library search path is "/usr/local/lib/magic/sys/current /usr/local/lib/magic/tutorial"
+System search path is ". /usr/local/lib/magic/sys /usr/local/lib/magic/sys/current"
+
+% gds write test
+   Generating output for cell sky130_fd_sc_hd__and2_1
+   Generating output for cell test
+select: sky130_fd_sc_hd__and2_1_0
+select cell: sky130_fd_sc_hd__and2_1_0
+magic::popstack: No subcell stack!
+
+% property
+{LEFclass CORE} {LEFsite unithd} {FIXED_BBOX 0 0 460 544} {GDS_FILE $PDKPATH/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds} {GDS_START 336980} {GDS_END 341822} {LEFsymmetry X Y R90} {path 0.000 13.600 11.500 13.600 }
+```
+
+Create a vendor-like cell
+```shell
+% gds readonly true
+% gds rescale false
+% gds read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds
+...
+Reading "sky130_fd_sc_hd__and2b_1".
+Loading DRC CIF style.
+
+% load sky130_fd_sc_hd__and2_1
+% property
+{FIXED_BBOX 0 0 460 544} {GDS_FILE $PDKPATH/libs.ref/sky130_fd_sc_hd/gds/sky130_fd_sc_hd.gds} {GDS_END 341822} {GDS_START 336980} {path 0.000 13.600 11.500 13.600 }
+```
+
+Read vendor cell GDS in readonly mode, annotate with LEF, annotate with SPICE, save it to disk. Then compare to original vendor cell.
+
+```shell
+% gds readonly true
+% gds read /usr/share/...
+Reading "sky130_fd_sc_hd__and2b_1".
+Loading DRC CIF style.
+% port index
+3
+% port name
+X
+% port use
+default
+% port class
+default
+
+% lef read /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lef/sky130_fd_sc_hd.lef
+Reading LEF data from file /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lef/sky130_fd_sc_hd.lef.
+This action cannot be undone.
+LEF read: Processed 68161 lines.
+% port name
+X
+% port use
+signal
+% port class
+output
+
+% readspice /usr/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
+...
+Annotating cell sky130_fd_sc_hd__inv_4
+Selected cell is sky130_fd_sc_hd__inv_4 (Topmost cell in the window)
+Cell sky130_fd_sc_hd__inv_4 port order was modified.
+
+% port index
+7
+% port name
+X
+% port class
+output
+% port use
+signal
+
+# Index of output port X now matches the SPICE model netlist, .subckt sky130_fd_sc_hd__nand2_1 A B VGND VNB VPB VPWR Y
+```
+
+TODO
+Run SPICE simulation for ideal and2 cell, and2 with parasitic capacitances and and2 with both parasitic capacitances and parasitic resistances.
+
+Running DRC
+
+Magic can do DRC checks, by default the style drc(fast) is used.
+
+```shell
+% drc check
+% drc style
+
+% drc style drc(full)
+% drc check
+```
+
+To jump to the next DRC error use 'drc find', to show details about the error use 'drc why'.
+```shell
+% drc find
+% drc why
+```
+
+### Layout XOR
+
+To compare two layouts and find differences the layours can be XOR-ed geometrically.
+This means that for each layer, the intersecting parts of the two layouts will be removed.
+What will remain are only the differences, i.e. things that are only present in layout A but not in layout B or vice versa.
+
+This is a useful tool to highlight and analyse the differences between two layouts.
+E.g. after a manual or scripted change was applied, the new layout can be compared the original, to see exactly what has changed.
+
 ---
+
 
 (Front-End and Back-End DRC)
 ## Day 3 Theory: Introduction to DRC Rules
