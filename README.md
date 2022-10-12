@@ -1,21 +1,85 @@
 # sky130-physical-verification-workshop
 
-My notes about the physical verification workshop for the SKY130 PDK held by VSD-IAT in October 2022 .
+My notes about the physical verification workshop for the SKY130 PDK organized by VSD-IAT in October 2022.
 
 ---
 
-## Day 1 Theory: Introduction to SkyWater SKY130 PDK
+## Day 1 Lecture: Introduction to SkyWater SKY130 PDK
 
 Overview of open-source tools, the PDK, layers, devices, etc.
 
-
-## Day 1 Labs: Tool Installation and basic DRC/LVS Design Flow
+## Day 1 Lab: Tool Installation and Basic DRC/LVS Design Flow
 
 Setup of tools, project folder, etc., create inverter schematic and run spice simulation
 
+### magic
+
+<img src="todo.png" width=612>
+
+### xschem
+
+<img src="todo.png" width=612>
+
+### netgen
+
+<img src="todo.png" width=612>
+
+### ngspice
+
+<img src="todo.png" width=612>
+
+### Don't repeat myself
+
+To make things more conveniente for myself in the future, I wrote a script to automate the process of setting up a new lab project.
+
+```shell
+#!/bin/sh
+
+######################################################################
+# project setup, folder structure etc
+
+# Since script can not be made executable on the lab instance,
+# it must be sourced, set correct project name before doing so.
+project_name=new_project
+project_dir=$(pwd)/${project_name}
+
+mkdir -p ${project_dir}
+cd ${project_dir}
+
+mkdir mag netgen ngspice xschem
+
+######################################################################
+# xschem setup
+
+cd ${project_dir}/xschem
+ln -s /usr/share/pdk/sky130A/libs.tech/ngspice/spinit .spiceinit
+ln -s /usr/share/pdk/sky130A/libs.tech/xschem/xschemrc xschemrc
+
+######################################################################
+# magic setup
+
+cd ${project_dir}/mag
+ln -s /usr/share/pdk/sky130A/libs.tech/magic/sky130A.magicrc .magicrc
+extract_script=${project_dir}/mag/do_extract.tcl
+echo "extract do local" > ${extract_script}
+echo "extract all" >> ${extract_script}
+echo "ext2spice lvs" >> ${extract_script}
+echo "ext2spice" >> ${extract_script}
+
+######################################################################
+# netgen setup
+
+cd ${project_dir}/netgen
+lvs_subcircuit=${project_name}
+# Create example netgen script.
+echo 'netgen -batch lvs "../mag/${subcircuit_name} ${subcircuit_name}" "../xschem/${subcircuit_name} ${subcircuit_name}"' > run_lvs.sh
+```
+
+Note that the script has to be `source`d inside the shell in case it is not possible to `sudo chmod u+x` the script file.
+
 ---
 
-## Day 2 Theory: Introduction to DRC and LVS
+## Day 2 Lecture: Introduction to DRC and LVS
 
 Verification to ensure design is functional.
 
@@ -150,7 +214,7 @@ Cannot run LVS down to transistor level, standard cells (considered correct) mus
 Compare two layouts by XOR-ing layers/masks. Highlights differences (or changes) between two layouts A and B.
 
   
-## Day 2 Labs: GDS Read/Write, Extraction, DRC, LVS, XOR
+## Day 2 Lab: GDS Read/Write, Extraction, DRC, LVS, XOR
 
 List all input styles known to magic:
 ```shell
@@ -183,8 +247,8 @@ Or use the cell manager menu under Options > Cell Manager.
 
 The AND2 cell layout will be shown.  
 The cell ports are shown in yellow, which means they are just text labels, not ports as they should be.  
-<img src="images/vsdiat_lab2_magic_cell_and2.PNG" width=612>
 <img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130.PNG" width=612>
+<img src="images/vsdiat_lab2_magic_cell_and2.PNG" width=612>
 
 Read the standard cell library again, but this time with the correct istyle.
 
@@ -250,6 +314,19 @@ VPWR
 default
 % port 1 use
 default
+```
+
+To make things a little easier a Tcl proc can be used to print out all ports of the open layout:
+
+```shell
+proc report_ports {} {
+  set start_idx [port first]
+  set stop_idx [port last]
+  puts "Index\tName\t\Use\tClass"
+  for {set idx $start_idx} {$idx <= $stop_idx} {incr idx} {
+    puts "$idx\t[port $idx name]\t[port $idx use]\t[port $idx class]"
+  }
+}
 ```
 
 Most of the attributes return 'default' because the GDS file format does not contain meta data like that.
@@ -414,9 +491,7 @@ E.g. after a manual or scripted change was applied, the new layout can be compar
 
 ---
 
-
-(Front-End and Back-End DRC)
-## Day 3 Theory: Introduction to DRC Rules
+## Day 3 Lecture: Introduction to DRC Rules
 
 Recap of silicon manufacturing process and yield.
 All layers should have about the same failure rate, so there is not a single layer responsible for more failures than the rest (reducing the yield). Design rules are not magic numbers, DRC violations MAY produce a working chip, but MAY reduce yield (maybe significantly).
@@ -472,20 +547,22 @@ Rules for test vs production, for experimental design DRC violation may be unavo
 
 ERC electrical rule check, electromigration, overvoltage, thin high-current wires, 
 
-## Day 3 Labs: DRC rules
+## Day 3 Lab: DRC rules
 
 ---
 
-## Day 4 Theory: Understanding the PNR and Physical Verification
+## Day 4 Lecture: Understanding the PNR and Physical Verification
 
 
-## Day 4 Labs: No Labs Today 🥳
-  
+## Day 4 Lab: No Labs Today 🥳
+
+<img src="https://c.tenor.com/WN1d6h8KxpQAAAAC/partyhard-toilet.gif">
+
 ---
 
-## Day 5 Fundamentals of LVS
+## Day 5 Lecture: Fundamentals of LVS
 
-## Day 5 Labs: LVS
+## Day 5 Lab: LVS
   
 ---
 
