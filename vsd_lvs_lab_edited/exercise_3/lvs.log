@@ -1,0 +1,74 @@
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Generating JSON file result
+Treating empty subcircuits as black-box cells
+Reading netlist file netA.spice
+Reading netlist file netB.spice
+Reading setup file /usr/share/pdk/sky130A/libs.tech/netgen/sky130A_setup.tcl
+Matching pins of cell2 in circuits 1 and 2
+
+Subcircuit pins:
+Circuit 1: cell2                           |Circuit 2: cell2                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Matching pins of cell3 in circuits 1 and 2
+
+Subcircuit pins:
+Circuit 1: cell3                           |Circuit 2: cell3                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Comparison output logged to file exercise_3_comp.out
+Logging to file "exercise_3_comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+  Class: cell4                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Result: Netlists do not match.
+Logging to file "exercise_3_comp.out" disabled
+LVS Done.
+LVS file exercise_3_comp.json reports:
+    net count difference = 0
+    device count difference = 2
+    unmatched nets = 3
+    unmatched devices = 1
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 6

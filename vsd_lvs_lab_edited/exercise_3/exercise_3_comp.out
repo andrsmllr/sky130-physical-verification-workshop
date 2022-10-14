@@ -1,0 +1,65 @@
+
+Subcircuit pins:
+Circuit 1: cell2                           |Circuit 2: cell2                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell2 and cell2 are equivalent.
+
+Subcircuit pins:
+Circuit 1: cell3                           |Circuit 2: cell3                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell3 and cell3 are equivalent.
+
+Subcircuit summary:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+cell4 (1)                                  |(no matching element)                      
+cell2 (1)                                  |cell2 (1)                                  
+cell3 (1)                                  |cell3 (1)                                  
+(no matching element)                      |cell1 (1)                                  
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+NET mismatches: Class fragments follow (with fanout counts):
+Circuit 1: test                            |Circuit 2: test                            
+
+---------------------------------------------------------------------------------------
+Net: C                                     |Net: C                                     
+  cell4/C = 1                              |  cell1/C = 1                              
+  cell3/A = 1                              |  cell3/A = 1                              
+  cell3/B = 1                              |  cell3/B = 1                              
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Net: B                                     |Net: B                                     
+  cell4/B = 1                              |  cell1/B = 1                              
+  cell2/B = 1                              |  cell2/B = 1                              
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Net: A                                     |Net: A                                     
+  cell4/A = 1                              |  cell1/A = 1                              
+  cell2/A = 1                              |  cell2/A = 1                              
+  cell2/C = 1                              |  cell2/C = 1                              
+  cell3/C = 1                              |  cell3/C = 1                              
+---------------------------------------------------------------------------------------
+DEVICE mismatches: Class fragments follow (with node fanout counts):
+Circuit 1: test                            |Circuit 2: test                            
+
+---------------------------------------------------------------------------------------
+Instance: cell41                           |Instance: cell11                           
+  A = 4                                    |  A = 4                                    
+  B = 2                                    |  B = 2                                    
+  C = 3                                    |  C = 3                                    
+---------------------------------------------------------------------------------------
+Netlists do not match.
+Netlists do not match.

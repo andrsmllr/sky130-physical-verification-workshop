@@ -1,0 +1,66 @@
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Generating JSON file result
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading setup file /usr/share/pdk/sky130A/libs.tech/netgen/sky130A_setup.tcl
+Comparison output logged to file exercise2_comp.out
+Logging to file "exercise2_comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Netlists match uniquely.
+Result: Cells failed matching, or top level cell failed pin matching.
+
+Logging to file "exercise2_comp.out" disabled
+LVS Done.
