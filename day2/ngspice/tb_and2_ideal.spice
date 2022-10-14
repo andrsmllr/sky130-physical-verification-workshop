@@ -1,0 +1,28 @@
+.subckt tb in out
+*.PININFO in:O out:O
+
+V1 net1 GND 1.8
+V2 A GND PWL(0n 0 400n 0 500n 1.8 1200n 1.8)
+V3 B GND PWL(0n 0 800n 0 900n 1.8 1200n 1.8)
+
+# Subcircuit definition of and2_1 and pin order
+# .subckt sky130_fd_sc_hd__and2_1 VPWR VGND X B A VPB VNB
+x1 net1 GND X B A net1 GND sky130_fd_sc_hd__and2_1
+
+**** begin user architecture code
+
+.lib /usr/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include ../mag/sky130_fd_sc_hd__and2_1.spice
+
+.control
+tran 1n 1200n
+plot V(A)
+plot V(B)
+plot V(X)
+.endc
+
+**** end user architecture code
+
+.GLOBAL GND
+** flattened .save nodes
+.end

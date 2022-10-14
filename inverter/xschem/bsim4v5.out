@@ -1,0 +1,6 @@
+
+Checking parameters for BSIM 4.5 model x1.xm1:sky130_fd_pr__nfet_01v8__model.25
+Fatal: Pclm = -0.0968433 is not positive.
+Fatal: Drout = -0.261499 is negative.
+Warning: Cdscd = -0.00649389 is negative.
+Warning: Eta0 = -0.0934787 is negative.

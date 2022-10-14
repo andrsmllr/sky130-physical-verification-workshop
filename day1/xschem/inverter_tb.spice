@@ -1,0 +1,38 @@
+**.subckt inverter_tb out in
+*.opin out
+*.opin in
+V1 in GND PWL(0 0 20n 0 900n 1.8)
+V2 net1 GND 1.8
+x1 net1 in out GND inverter
+**** begin user architecture code
+
+.lib /usr/share/pdk/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+
+
+.control
+tran 1n 1u
+plot V(in) V(out)
+.endc
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  inverter.sym # of pins=4
+* sym_path: /home/andreas.mueller2207/workspace/day1/xschem/inverter.sym
+* sch_path: /home/andreas.mueller2207/workspace/day1/xschem/inverter.sch
+.subckt inverter  vdd in out vss
+*.ipin in
+*.opin out
+*.iopin vss
+*.iopin vdd
+XM1 out in vss vss sky130_fd_pr__nfet_01v8 L=0.18 W=4.5 nf=3 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1 
+XM2 out in vdd vdd sky130_fd_pr__pfet_01v8 L=0.15 W=3 nf=3 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1 
+.ends
+
+.GLOBAL GND
+** flattened .save nodes
+.end
