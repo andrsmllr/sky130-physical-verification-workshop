@@ -31,12 +31,31 @@ echo "extract all" >> ${extract_script}
 echo "ext2spice lvs" >> ${extract_script}
 echo "ext2spice" >> ${extract_script}
 
+extract_script=${project_dir}/mag/do_extract_caps.tcl
+echo "extract do local" > ${extract_script}
+echo "extract all" >> ${extract_script}
+echo "ext2spice lvs" >> ${extract_script}
+echo "ext2spice cthresh 0.01" >> ${extract_script}
+echo "ext2spice" >> ${extract_script}
+
+extract_script=${project_dir}/mag/do_extract_fullrc.tcl
+echo "extract do local" > ${extract_script}
+echo "extract all" >> ${extract_script}
+echo "ext2sim labels on" >> ${extract_script}
+echo "ext2sim" >> ${extract_script}
+echo "extresist tolerance 10" >> ${extract_script}
+echo "extresist all" >> ${extract_script}
+echo "ext2spice cthresh 0.01" >> ${extract_script}
+echo "ext2spice extresist on" >> ${extract_script}
+echo "ext2spice" >> ${extract_script}
+
 ##########################################################################
 # netgen setup
 
 cd ${project_dir}/netgen
 lvs_subcircuit=${project_name}
-echo 'netgen -batch lvs "../mag/${subcircuit_name} ${subcircuit_name}" "../xschem/${subcircuit_name} ${subcircuit_name}"'
+echo '#!/bin/sh' > ./run_lvs.sh
+echo 'netgen -batch lvs "../mag/${subcircuit_name} ${subcircuit_name}" "../xschem/${subcircuit_name} ${subcircuit_name}"' >> run_lvs.sh
 
 ##########################################################################
 
