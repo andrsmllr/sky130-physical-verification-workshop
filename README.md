@@ -2740,13 +2740,13 @@ I want to thank myself for having had the discipline and patience to complete th
 [4] http://opencircuitdesign.com/netgen/  
 [5] https://openlane.readthedocs.io/en/latest/index.html  
 [6] https://open-source-silicon.slack.com The open-source-silicon Slack channel  
-[7] https://github.com/The-OpenROAD-Project/OpenLane
-[8] https://github.com/RTimothyEdwards/netgen
-[9] https://github.com/imr/ngspice
-[10] https://github.com/PySpice-org/PySpice
-[11] https://github.com/StefanSchippers/xschem
-[12] https://github.com/RTimothyEdwards/magic
-[13] https://github.com/kunalg123/sky130RTLDesignAndSynthesisWorkshop
+[7] https://github.com/The-OpenROAD-Project/OpenLane  
+[8] https://github.com/RTimothyEdwards/netgen  
+[9] https://github.com/imr/ngspice  
+[10] https://github.com/PySpice-org/PySpice  
+[11] https://github.com/StefanSchippers/xschem  
+[12] https://github.com/RTimothyEdwards/magic  
+[13] https://github.com/kunalg123/sky130RTLDesignAndSynthesisWorkshop  
 [14] https://wikipedia.org, I guess ... why not  
 [15] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
 [16] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
