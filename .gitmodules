@@ -1,0 +1,6 @@
+[submodule "vsd_drc_lab"]
+	path = vsd_drc_lab
+	url = https://github.com/RTimothyEdwards/vsd_drc_lab.git
+[submodule "vsd_lvs_lab"]
+	path = vsd_lvs_lab
+	url = https://github.com/RTimothyEdwards/vsd_lvs_lab.git
