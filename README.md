@@ -351,7 +351,7 @@ Warning:  cell sky130_fd_sc_hd__and2b_1 already existed before reading GDS!
 
 The cell ports are shown in dark blue, which means they are correctly identified as ports, as they should be.  
 
-<img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130vendor.PNG" width=612>
+<img src="images/vsdiat_lab2_magic_cell_and2_abstract_view_kaput_1.PNG" width=612>
 
 To stop Magic from overwriting existing cells when reading a gds file set the noduplicates option:  
 
@@ -378,7 +378,7 @@ Using pre-existing cell definition
 
 The currently loaded cell is unchanged, as can be seen by the blue color of the cell ports.
 
-<img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130vendor.PNG" width=612>
+<img src="images/vsdiat_lab2_magic_cell_and2_abstract_view_kaput_1.PNG" width=612>
 
 Select a port in the cell view and get it's index:
 
@@ -872,7 +872,7 @@ lots of output
 Exit docker and run magic, then open the example design GDSII.
 Press x to expand all cells, so it looks all nice and colorful.
 
-<img src="todo.png" width=612>
+<img src="images/vsdiat_lab4_spm_gds.PNG" width=612>
 
 ### Interactive OpenLANE Run
 
@@ -1063,7 +1063,7 @@ $ ./flow.tcl -design picorv32a
 # Done
 ```
 
-<img src="todo.png" width=612>
+<img src="images/vsdiat_lab4_picorv32a_gds.PNG" width=612>
 
 ---
 
@@ -2249,7 +2249,6 @@ Power-on reset circuit.
 
 Initially we have not netlist. So create it from the schematic.
 
-<img src="images/vsdiat_lab5_ex5_5.PNG" width=612>
 <img src="images/vsdiat_lab5_ex5_5_netlist_b.PNG" width=612>
 
 Then continue with Magic
@@ -2325,7 +2324,6 @@ Disable the "top level as subcircuit option" in xschem when doing this.
 Note that the testbench contains spice commands to include the cell model definitions.
 
 <img src="images/vsdiat_lab5_ex5_7b.PNG" width=612>
-<img src="images/vsdiat_lab5_ex5_" width=612>
 
 Edit the `run_lvs_wrapper.sh` to point to the new spice netlist (with _tb suffix).
 Or copy and rename the script before doing the edit.
@@ -2728,7 +2726,7 @@ Total errors = 0
 And LVS passes with 0 errors.
 Bingo.
 
-## All Done
+## Acknowledgement and Thanks
 
 I want to thank myself for having had the discipline and patience to complete this workshop in my own free time when I could have done nothing instead. I'm awesome.
 
@@ -2741,6 +2739,7 @@ I want to thank myself for having had the discipline and patience to complete th
 [3] http://opencircuitdesign.com/open_pdks/index.html  
 [4] http://opencircuitdesign.com/netgen/  
 [5] https://openlane.readthedocs.io/en/latest/index.html  
-[6] https://wikipedia.org, I guess ... why not  
-[7] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
-[8] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
+[6] https://open-source-silicon.slack.com The open-source-silicon Slack channel  
+[7] https://wikipedia.org, I guess ... why not  
+[8] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
+[9] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
