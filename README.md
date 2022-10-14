@@ -592,6 +592,19 @@ This is how the XOR result will look like if a cell is slightly shifted in one l
 
 <img src="images/vsdiat_lab2_magic_cell_and2_xor_test2b.PNG" width=612>
 
+During this exercise it was a little tedious to query individual ports for a loaded cell in Magic, basically using try and error. So I wrote a Tcl proc to print out all ports in tabular form.
+
+```shell
+proc report_ports {} {
+  set start_idx [port first]
+  set stop_idx [port last]
+  puts "Index\tName\t\Use\tClass"
+  for {set idx $start_idx} {$idx <= $stop_idx} {incr idx} {
+    puts "$idx\t[port $idx name]\t[port $idx use]\t[port $idx class]"
+  }
+}
+```
+
 ---
 
 ## Day 3 Lecture: Introduction to DRC Rules
@@ -1207,14 +1220,16 @@ $ git clone http://github.com/RTimothyEdwards/vsd_lvs_lab
 $ cd ./vsd_lvs_lab/exercise_1
 $ ls
 netA.spice  netB.spice
-andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_1$ cat netA.spice 
+
+$ cat netA.spice 
 * Example SPICE netlist netA.spice
 *
 X1 A B C cell1
 X2 A B A cell2
 X3 C C A cell3
 .end
-andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_1$ cat netB.spice 
+
+$ cat netB.spice 
 * Example SPICE netlist netB.spice
 *
 X1 A B C cell1
@@ -2146,7 +2161,8 @@ X2 A B A cell2
 X3 C C A cell3
 .ends
 .end
-andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_4$ cat netB.spice 
+
+$ cat netB.spice 
 * Example SPICE netlist netB.spice
 *
 .subckt cell1 A B C
