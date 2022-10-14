@@ -8,25 +8,53 @@ My notes about the physical verification workshop for the SKY130 PDK organized b
 
 Overview of open-source tools, the PDK, layers, devices, etc.
 
-## Day 1 Lab: Tool Installation and Basic DRC/LVS Design Flow
+### Magic
 
-Setup of tools, project folder, etc., create inverter schematic and run spice simulation
+Magic is a open-source VLSI layout tool [1].
+Magic can perform DRC checking, netlist extraction and more.
+Magic comes with a integrated Tcl interpreter.
 
-### magic
+In the project dir, create a folder for Magic and set up links to the magicrc file from the PDK. This sets up Magic for use with the SKY130 PDK.
 
-<img src="todo.png" width=612>
+```shell
+$ mkdir -p mag
+$ cd ./mag
+$ ln -s /usr/share/pdk/sky130A/libs.tech/magic/magicrc .magicrc
+```
 
-### xschem
+<img src="images/vsdiat_day1_magic.PNG" width=612>
 
-<img src="todo.png" width=612>
+### Xschem
 
-### netgen
+Xschem is a open-source schematic capture tool for drawing digital and analog electronic circuits.
+Xschem can generate SPICE netlists in different flavors and for variaous purposes.
 
-<img src="todo.png" width=612>
+In the project dir, create a folder for Xschem and set up links to the xschemrc and spinit files from the PDK. This sets up Xschem for use with the SKY130 PDK.
 
-### ngspice
 
-<img src="todo.png" width=612>
+```shell
+$ mkdir -p mag
+$ cd ./mag
+ln -s /usr/share/pdk/sky130A/libs.tech/ngspice/spinit .spiceinit
+‌ln -s /usr/share/pdk/sky130A/libs.tech/xschem/xschemrc xschemrc
+```
+
+<img src="images/vsdiat_day1_xschem.PNG" width=612>
+
+### Netgen
+
+Netgen is a open-source netlist equivalence checking tool.
+Netgen can be used for layout vs. schematic (LVS) checking to find differences
+between a schematic netlist and a netlist extracted from a related layout.
+It can handle many difference netlist formats and is controlled from a integrated Tcl interpreter.
+
+<img src="images/vsdiat_day1_netgen.PNG" width=612>
+
+### Ngspice
+
+Ngspice is a open-source SPICE simulator. There are other options, but this one works just as well. It has a integrated Tcl interpreter, which should come at no surprise at this point.
+
+<img src="images/vsdiat_day1_ngspice.PNG" width=612>
 
 ### Don't repeat myself
 
@@ -78,6 +106,60 @@ echo 'netgen -batch lvs "../mag/${subcircuit_name} ${subcircuit_name}" "../xsche
 Note that the script has to be `source`d inside the shell in case it is not possible to `sudo chmod u+x` the script file.
 
 ---
+
+## Day 1 Lab: Tool Installation and Basic DRC/LVS Design Flow
+
+On the first day we learn how to set up the tools, the project folder, setup scripts, and so on.
+
+As an introductoy example we create a inverter schematic and run spice simulation.
+
+Create the inverter schematic in xschem by placing symbols for one nfet, one pfet, one ipin, one opin and two iopins. Connect all symbols correctly to get an inverter.
+Create a symbol for the inverter schematic, which can be used to instantiate the inverter as a subcircuit into another schematic, e.g. the testbench.
+Extract the netlist, but make sure to select "top level as subcircuit" from the simulation menu before writing the netlist.
+<img src="images/vsdiat_inverter_schematic_1.PNG" width=612>
+
+Create a new schematic for the testbench of the inverter.
+Place one inverter symbol, which was created previously.
+Add one voltage source which get connected to the power supply pins of the inverter.
+Add another voltage source which generated the stimulus input to the inverter for transient simulation.
+Add a ground symbol and connect it appropriately.
+Add two SPICE code blocks.
+The first one does include the device library from the SKY130 PDK.
+The second one does hold the commands to run a transient simulation.
+Extract the netlist
+<img src="images/vsdiat_inverter_spice_sim_1.PNG" width=612>
+
+Now go to the `./mag` subfolder and launch Magic.
+Import the inverter netlist which was created before.
+The Magic layout will show the parameterized devices and ports from the netlist.
+All that needs to be done is place them and connect them correctly.
+<img src="images/vsdiat_inverter_magic_1.PNG" width=612>
+
+<img src="images/vsdiat_inverter_magic_3.PNG" width=612>
+
+Finally extract the netlist from the Magic layout.
+This command sequence will be used a lot, best to memorize it or create a Tcl proc which does the same.
+
+```shell
+# From the Magic Tcl schell
+% extract do local
+% extract all
+% ext2spice lvs
+% ext2spice
+```
+
+Now copy the extracted netlist to the xschem directory and run the simulation again, using the extracted netlist from layout for the inverter.
+
+<img src="images/vsdiat_inverter_spice_sim_1.PNG" width=612>
+
+As a final step netgen can be run to verify that layout and schematic match.
+More on this in a later exercise.
+
+```shell
+netgen -batch lvs "../mag/inverter.spice inverter" "../xschem/inverter.spice inverter"
+```
+
+Looks good.
 
 ## Day 2 Lecture: Introduction to DRC and LVS
 
@@ -245,6 +327,8 @@ Get list of available top level cells:
 ```
 Or use the cell manager menu under Options > Cell Manager.
 
+<img src="images/vsdiat_lab2_magic_cell_and2.PNG" width=612>
+
 The AND2 cell layout will be shown.  
 The cell ports are shown in yellow, which means they are just text labels, not ports as they should be.  
 <img src="images/vsdiat_lab2_magic_cell_and2_istyle_sky130.PNG" width=612>
@@ -302,6 +386,8 @@ Select a port in the cell view and get it's index:
 % port index
 3
 ```
+
+<img src="images/vsdiat_lab2_magic_cell_and2_port_index.PNG" width=612>
 
 Get the first port in the cell and get more info about it:
 
@@ -379,6 +465,12 @@ Now port 1 is the port named A, no longer VPWR as before, which matches the port
 
 LEF always is a library and has no concept of a top cell. LEF files are all about placement and routing, no transistors etc.
 Some meta data, not other.
+
+<img src="images/vsdiat_lab2_magic_cell_manager2.PNG" width=612>
+
+The abstract view of the and2_1 cell from the LEF file.
+
+<img src="images/vsdiat_lab2_magic_cell_and2_lef_abstract_view.PNG" width=612>
 
 In a LEF abstract view everything (metal) that isn't a pin is considered to be an obstruction.
 
@@ -459,7 +551,6 @@ signal
 # Index of output port X now matches the SPICE model netlist, .subckt sky130_fd_sc_hd__nand2_1 A B VGND VNB VPB VPWR Y
 ```
 
-TODO
 Run SPICE simulation for ideal and2 cell, and2 with parasitic capacitances and and2 with both parasitic capacitances and parasitic resistances.
 
 Running DRC
@@ -474,11 +565,17 @@ Magic can do DRC checks, by default the style drc(fast) is used.
 % drc check
 ```
 
+<img src="images/vsdiat_lab2_magic_cell_and2_drc_nok.PNG" width=612>
+
 To jump to the next DRC error use 'drc find', to show details about the error use 'drc why'.
 ```shell
 % drc find
 % drc why
 ```
+
+Adding a tap cell does fix the error.
+
+<img src="images/vsdiat_lab2_magic_cell_and2_with_tap_drc_ok.PNG" width=612>
 
 ### Layout XOR
 
@@ -486,8 +583,14 @@ To compare two layouts and find differences the layours can be XOR-ed geometrica
 This means that for each layer, the intersecting parts of the two layouts will be removed.
 What will remain are only the differences, i.e. things that are only present in layout A but not in layout B or vice versa.
 
+<img src="images/vsdiat_lab2_magic_cell_and2_xor_test.PNG" width=612>
+
 This is a useful tool to highlight and analyse the differences between two layouts.
 E.g. after a manual or scripted change was applied, the new layout can be compared the original, to see exactly what has changed.
+
+This is how the XOR result will look like if a cell is slightly shifted in one layout compared to the other layout.
+
+<img src="images/vsdiat_lab2_magic_cell_and2_xor_test2b.PNG" width=612>
 
 ---
 
@@ -549,6 +652,8 @@ ERC electrical rule check, electromigration, overvoltage, thin high-current wire
 
 ## Day 3 Lab: DRC rules
 
+Begin by cloning the github repository used for the lab exercises.
+
 ```shell
 $ git clone https://github.com/RTimothyEdwards/vsd_drc_lab.git
 Cloning into 'vsd_drc_lab'...
@@ -569,12 +674,47 @@ $ ./run_magic
 
 ### Exercise 1 (L1): Width and Spacing Rules
 
+In this lab exercise a number of layouts are presented which contain examples
+of DRC violations.
+
 ```shell
 $ ./run_magic
 
 % load exercise_1.mag
 % drc find
 ```
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1_3.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1_4.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1_5.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1_6.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1_complete.PNG" width=612></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1b_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1b_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1b_3.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1c_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1c_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex1d_1.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex1d_2.PNG" width=612></td>
+</tr>
+</table>
 
 ### Exercise 2 (L2): Wide Spacing and Notch Rules
 
@@ -591,6 +731,25 @@ The valid CIF layer names are: CELLBOUND, BOUND, DNWELL, PWRES, SUBCUT, NWELL, W
 
 % feedback clear
 ```
+
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab3_ex2a_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex2a_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex2b_1.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex2b_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex2c_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex2c_2.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex2c_3.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex2d_1.PNG" width=612></td>
+</tr>
+</table>
+
 
 ### Exercise 2 (L3): Via Size, Multiple Vias, Via Overlap and Autogenerated Vias
 
@@ -614,6 +773,21 @@ $ ./run_magic
 # width requirements when rising up a layer, but does not decrease automatically when decending a layer.
 ```
 
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab3_ex3_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex3_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex3a_2.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex3b_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex3b_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex3b_3.PNG" width=612></td>
+</tr>
+</table>
+
+
 ### Exercise 3 (L4): Minimum Area and Minimum Hole Rules
 
 ```shell
@@ -622,6 +796,19 @@ $ ./run_magic
 $ load exercise_3.mag
 
 ```
+
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab3_ex4_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex4a_1.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex4a_2.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab3_ex4b_2.PNG" width=612></td>
+<td><img src="images/vsdiat_lab3_ex4c_1.PNG" width=612></td>
+</tr>
+</table>
 
 ### Exercise 5: Wells and Deep N-Well
 
@@ -864,7 +1051,15 @@ $ ./flow.tcl -design picorv32a
 
 ... this will take some time
 
+[INFO]: Generating final set of reports...
+[INFO]: Created manufacturability report at 'designs/picorv32a/runs/RUN_2022.10.13_23.40.19/reports/manufacturability.rpt'.
+[INFO]: Created metrics report at 'designs/picorv32a/runs/RUN_2022.10.13_23.40.19/reports/metrics.csv'.
+[WARNING]: There are max fanout violations in the design at the typical corner. Please refer to 'designs/picorv32a/runs/RUN_2022.10.13_23.40.19/reports/signoff/31-rcx_sta.slew.rpt'.
+[INFO]: There are no hold violations in the design at the typical corner.
+[INFO]: There are no setup violations in the design at the typical corner.
 [SUCCESS]: Flow complete.
+[INFO]: Note that the following warnings have been generated:
+[WARNING]: There are max fanout violations in the design at the typical corner. Please refer to 'designs/picorv32a/runs/RUN_2022.10.13_23.40.19/reports/signoff/31-rcx_sta.slew.rpt'.
 # Done
 ```
 
@@ -2049,7 +2244,13 @@ run_lvs_por.sh	run_lvs_wrapper.sh
 
 Power-on reset circuit.
 
+<img src="images/vsdiat_lab5_ex5_1.PNG" width=612>
+<img src="images/vsdiat_lab5_ex5_2.PNG" width=612>
+
 Initially we have not netlist. So create it from the schematic.
+
+<img src="images/vsdiat_lab5_ex5_5.PNG" width=612>
+<img src="images/vsdiat_lab5_ex5_5_netlist_b.PNG" width=612>
 
 Then continue with Magic
 
@@ -2058,6 +2259,11 @@ $ cd ../mag
 $ ./run_magic
 ...
 ```
+
+<img src="images/vsdiat_lab5_ex5_6.PNG" width=612>
+<img src="images/vsdiat_lab5_ex5_6b.PNG" width=612>
+<img src="images/vsdiat_lab5_ex5_6c.PNG" width=612>
+
 
 Extract the netlist from the layout in Magic using the know command sequence.
 
@@ -2118,6 +2324,9 @@ To fix this use the testbench and extract the analog_wrapper subcircuit from the
 Disable the "top level as subcircuit option" in xschem when doing this.
 Note that the testbench contains spice commands to include the cell model definitions.
 
+<img src="images/vsdiat_lab5_ex5_7b.PNG" width=612>
+<img src="images/vsdiat_lab5_ex5_" width=612>
+
 Edit the `run_lvs_wrapper.sh` to point to the new spice netlist (with _tb suffix).
 Or copy and rename the script before doing the edit.
 
@@ -2176,6 +2385,8 @@ run_lvs.sh
 $ ls verilog/
 digital_pll.v  source
 ```
+
+<img src="images/vsdiat_lab5_ex6_1b.PNG" width=612>
 
 Looking at the Verilog file shows it is just a flat structural Verilog module
 which instantiates the primitive cells.
@@ -2244,6 +2455,8 @@ $ ls verilog/
 gl  mgmt_protect.v  mgmt_protect_hv.v
 ```
 
+<img src="images/vsdiat_lab5_ex7_1b.PNG" width=612>
+
 Run extraction on mag file to get spice netlist of layout.
 
 ```shell
@@ -2259,6 +2472,8 @@ Usage:  count_lvs.py [filename]
 
 Did not get very far.
 Inspect verilog code.
+
+<img src="images/vsdiat_lab5_ex7_2.PNG" width=612>
 
 ```shell
 $ ./run_lvs.sh
@@ -2315,6 +2530,8 @@ $ ls verilog/
 digital_pll.v
 ```
 
+<img src="images/vsdiat_lab5_ex8_1.PNG" width=612>
+
 Start by extracting the layout netlist with Magic.
 
 ```shell
@@ -2352,6 +2569,8 @@ LVS file exercise_8_comp.json reports:
 Total errors = 63
 ```
 
+<img src="images/vsdiat_lab5_ex8_2b.PNG" width=612>
+
 Fix the missing diode by inserting it in the Verilog file.
 
 ```shell
@@ -2364,11 +2583,16 @@ sky130_fd_sc_hd__diode_2 sky130_fd_sc_hd__diode_2_0 (
 );
 ```
 
+<img src="images/vsdiat_lab5_ex8_3.PNG" width=612>
+
 Still errors for decap cells. Power network issues are tough since they are global nets and touch everything.
 
 ```shell
 
 ```
+
+<img src="images/vsdiat_lab5_ex8_4.PNG" width=612>
+<img src="images/vsdiat_lab5_ex8_5.PNG" width=612>
 
 Fix the power connection in Magic, extract again, and rerun netgen LVS.
 
@@ -2395,6 +2619,16 @@ run_lvs_por.sh
 $ ls xschem/
 example_por.sch  example_por.sym  example_por_tb.sch  xschemrc
 ```
+
+<table>
+<tr>
+<td><img src="images/vsdiat_lab5_ex9_1a.PNG" width=612></td>
+<td><img src="images/vsdiat_lab5_ex9_1b.PNG" width=612></td>
+</tr>
+<tr>
+<td><img src="images/vsdiat_lab5_ex9_2a.PNG" width=612></td>
+</tr>
+</table>
 
 Do netlist extraction for layout and schematic.
 
@@ -2439,6 +2673,13 @@ Usually update schematic to match the layout, usually the layout has to make som
 
 Fix width properties in schematic to match layout.
 
+<table>
+<tr>
+<td><img src="images/vsdiat_lab5_ex9_3.PNG" width=612></td>
+<td><img src="images/vsdiat_lab5_ex9_3b.PNG" width=612></td>
+</tr>
+</table>
+
 ```shell
 $ ./run_lvs_por.sh
 ...
@@ -2459,6 +2700,9 @@ Only one error left.
 
 Edit magic layout and change property (Ctrl+P) of the affected cell to have only 1 finger instead of 2.
 No new DRC errrors pop up after changing the property, which is nice.
+
+<img src="images/vsdiat_lab5_ex9_4.PNG" width=612>
+<img src="images/vsdiat_lab5_ex9_4b.PNG" width=612>
 
 ```
 $ ./run_lvs.sh
