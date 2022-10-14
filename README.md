@@ -844,6 +844,32 @@ All the best and happy learning.
 
 <img src="https://c.tenor.com/WN1d6h8KxpQAAAAC/partyhard-toilet.gif">
 
+There were still some examples on how to run OpenLANE.
+This part is best done on a machine with docker set up.
+
+```shell
+$ git clone https://github.com/the-openlane-project/openlane
+...
+
+$ cd openlane
+$ ls ./designs
+APU   PPU        aes       blabla       gcd       manual_macro_placement_test  s44      spm  usb_cdc_core  xtea    zipdiv
+BM64  README.md  aes_core  caravel_upw  inverter  picorv32a                    salsa20  usb  wbqspiflash   y_huff
+$ make mount
+...
+
+# Inside docker container now
+$ export PDK_ROOT=/openlane/pdks
+$ ./flow.tcl -design picorv32a
+
+... this will take some time
+
+[SUCCESS]: Flow complete.
+# Done
+```
+
+<img src="todo.png" width=612>
+
 ---
 
 ## Day 5 Lecture: Fundamentals of LVS
@@ -978,7 +1004,1488 @@ Actual netgen output is much shorter than the actual output, use real output fil
 netgen GUI exists, nice for some things.
 
 ## Day 5 Lab: LVS
-  
+
+### Exercise 1: Simple LVS Experiment
+
+```shell
+$ git clone http://github.com/RTimothyEdwards/vsd_lvs_lab
+$ cd ./vsd_lvs_lab/exercise_1
+$ ls
+netA.spice  netB.spice
+andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_1$ cat netA.spice 
+* Example SPICE netlist netA.spice
+*
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.end
+andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_1$ cat netB.spice 
+* Example SPICE netlist netB.spice
+*
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.end
+```
+
+```shell
+$ netgen
+(exercise_1) 1 % lvs netA.spice netB.spice
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Comparison output logged to file comp.out
+Logging to file "comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'netA.spice'
+Circuit netA.spice contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'netB.spice'
+Circuit netB.spice contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "comp.out" disabled
+LVS Done.
+```
+
+Netgen does not care if subcircuits / cells are defined or not.
+If netlists look the same thats enough for netgen and they will happily match.
+
+```shell
+Equate elements:  no current cell.
+Equate elements:  no current cell.
+Equate elements:  no current cell.
+
+Subcircuit summary:
+Circuit 1: netA.spice                      |Circuit 2: netB.spice
+-------------------------------------------|-------------------------------------------
+cell1 (1)                                  |cell1 (1)
+cell2 (1)                                  |cell2 (1)
+cell3 (1)                                  |cell3 (1)
+Number of devices: 3                       |Number of devices: 3
+Number of nets: 3                          |Number of nets: 3
+---------------------------------------------------------------------------------------
+Circuits match uniquely.
+Netlists match uniquely.
+Cells have no pins;  pin matching not needed.
+Device classes netA.spice and netB.spice are equivalent.
+Circuits match uniquely.
+```
+
+Now edit netA.spice and rename the first port of X3 from C to B.
+
+```shell
+~/workspace/vsd_lvs_lab/exercise_1$ netgen -batch lvs netA.spice netB.spice 
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Comparison output logged to file comp.out
+Logging to file "comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'netA.spice'
+Circuit netA.spice contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'netB.spice'
+Circuit netB.spice contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Result: Netlists do not match.
+Logging to file "comp.out" disabled
+LVS Done.
+```
+
+```shell
+$ cat comp.out 
+Equate elements:  no current cell.
+Equate elements:  no current cell.
+Equate elements:  no current cell.
+
+Subcircuit summary:
+Circuit 1: netA.spice                      |Circuit 2: netB.spice                      
+-------------------------------------------|-------------------------------------------
+cell1 (1)                                  |cell1 (1)                                  
+cell2 (1)                                  |cell2 (1)                                  
+cell3 (1)                                  |cell3 (1)                                  
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+NET mismatches: Class fragments follow (with fanout counts):
+Circuit 1: netA.spice                      |Circuit 2: netB.spice                      
+
+---------------------------------------------------------------------------------------
+Net: C                                     |Net: B                                     
+  cell1/3 = 1                              |  cell1/2 = 1                              
+  cell3/2 = 1                              |  cell2/2 = 1                              
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Net: B                                     |Net: C                                     
+  cell1/2 = 1                              |  cell1/3 = 1                              
+  cell2/2 = 1                              |  cell3/1 = 1                              
+  cell3/1 = 1                              |  cell3/2 = 1                              
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Net: A                                     |Net: A                                     
+  cell1/1 = 1                              |  cell1/1 = 1                              
+  cell2/1 = 1                              |  cell2/1 = 1                              
+  cell2/3 = 1                              |  cell2/3 = 1                              
+  cell3/3 = 1                              |  cell3/3 = 1                              
+---------------------------------------------------------------------------------------
+DEVICE mismatches: Class fragments follow (with node fanout counts):
+Circuit 1: netA.spice                      |Circuit 2: netB.spice                      
+
+---------------------------------------------------------------------------------------
+Instance: cell33                           |Instance: cell33                           
+  1 = 3                                    |  1 = 3                                    
+  2 = 2                                    |  2 = 3                                    
+  3 = 4                                    |  3 = 4                                    
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Instance: cell22                           |Instance: cell22                           
+  1 = 4                                    |  1 = 4                                    
+  2 = 3                                    |  2 = 2                                    
+  3 = 4                                    |  3 = 4                                    
+---------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------
+Instance: cell11                           |Instance: cell11                           
+  1 = 4                                    |  1 = 4                                    
+  2 = 3                                    |  2 = 2                                    
+  3 = 2                                    |  3 = 3                                    
+---------------------------------------------------------------------------------------
+Netlists do not match.
+Netlists do not match.
+```
+
+Now the two netlists do not match.
+How to find out what is wrong?
+
+### Exercise 2: LVS with Subcircuits
+
+Run reinitialize in netgen to make sure there is nothing left in memory between runs.
+
+```shell
+(exercise_2) 2 % reinitialize
+```
+
+Or run netgen in batch mode and restart it every time. For big netlists this may be slow(?).
+
+Same netlist examples as before but with subcircuits.
+
+```shell
+$ ls
+netA.spice  netB.spice
+$ cat netA.spice 
+* Example SPICE netlist netA.spice
+*
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+$ cat netB.spice 
+* Example SPICE netlist netB.spice
+*
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+```
+
+```shell
+$ netgen -batch lvs netA.spice netB.spice 
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Comparison output logged to file comp.out
+Logging to file "comp.out" enabled
+Contents of circuit 1:  Circuit: 'netA.spice'
+Circuit netA.spice contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'netB.spice'
+Circuit netB.spice contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit netA.spice contains no devices.
+Result: Verify:  cell netB.spice has no elements and/or nodes.  Not checked.
+Logging to file "comp.out" disabled
+LVS Done.
+```
+
+The problem here is that the subcircuits are only defined but not instantiated.
+So the spice netlist is effectively empty for a simulator, same for netgen.
+
+To fix this tell netgen that subcircuit `test` should be compared.
+
+```shell
+$ netgen -batch lvs "netA.spice test" "netB.spice test"
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Comparison output logged to file comp.out
+Logging to file "comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "comp.out" disabled
+LVS Done.
+```
+
+```shell
+$ cat comp.out 
+Warning: Equate pins:  cell cell1 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell1 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell1                           |Circuit 2: cell1                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell1 and cell1 are equivalent.
+Warning: Equate pins:  cell cell2 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell2 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell2                           |Circuit 2: cell2                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell2 and cell2 are equivalent.
+Warning: Equate pins:  cell cell3 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell3 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell3                           |Circuit 2: cell3                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell3 and cell3 are equivalent.
+
+Subcircuit summary:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+cell1 (1)                                  |cell1 (1)                                  
+cell2 (1)                                  |cell2 (1)                                  
+cell3 (1)                                  |cell3 (1)                                  
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+Circuits match uniquely.
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+C                                          |C                                          
+B                                          |B                                          
+A                                          |A                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes test and test are equivalent.
+Circuits match uniquely.
+```
+
+Now swap the pin names `A` anc `C` in `netA.spice`
+```shell
+* Example SPICE netlist netA.spice
+*
+.subckt test A B C
+X1 C B A cell1
+X2 C B C cell2
+X3 A A C cell3
+.ends
+.end
+```
+
+And compare netlists again. The comparison reports a mismatch.
+
+```shell
+$ netgen -batch lvs "netA.spice test" "netB.spice test"
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file netA.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Reading netlist file netB.spice
+Call to undefined subcircuit cell1
+Creating placeholder cell definition.
+Call to undefined subcircuit cell2
+Creating placeholder cell definition.
+Call to undefined subcircuit cell3
+Creating placeholder cell definition.
+Comparison output logged to file comp.out
+Logging to file "comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Netlists match uniquely.
+Result: Cells failed matching, or top level cell failed pin matching.
+
+Logging to file "comp.out" disabled
+LVS Done.
+```
+
+```shell
+$ cat comp.out 
+Warning: Equate pins:  cell cell1 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell1 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell1                           |Circuit 2: cell1                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell1 and cell1 are equivalent.
+Warning: Equate pins:  cell cell2 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell2 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell2                           |Circuit 2: cell2                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell2 and cell2 are equivalent.
+Warning: Equate pins:  cell cell3 has no definition, treated as a black box.
+Warning: Equate pins:  cell cell3 has no definition, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cell3                           |Circuit 2: cell3                           
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell3 and cell3 are equivalent.
+
+Subcircuit summary:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+cell1 (1)                                  |cell1 (1)                                  
+cell2 (1)                                  |cell2 (1)                                  
+cell3 (1)                                  |cell3 (1)                                  
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+Circuits match uniquely.
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+A                                          |C **Mismatch**                             
+B                                          |B                                          
+C                                          |A **Mismatch**                             
+---------------------------------------------------------------------------------------
+Cell pin lists for test and test altered to match.
+Cells failed matching, or top level cell failed pin matching.
+```
+
+Topological match is okay. Pin matching is not okay.
+
+To make running netgen simpler in the future create a shell script.
+The shell script also loads the netgen setup script from the PDK and creates additional JSON output.
+Also add the `count_lvs.py` utility script (originally from Qflow) which does some parsing and creates a compact LVS report.
+
+```shell
+#!/bin/sh  
+
+netgen -batch lvs "netA.spice test" "netB.spice test" /usr/share/pdk/sky130A/libs.tech/netgen/sky130A_setup.tcl exercise_2_comp.out -json | tree lvs.log
+$ ../count_lvs.py
+```
+
+```shell
+ $ ../count_lvs.py
+LVS file exercise2_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 0
+    unmatched devices = 0
+    unmatched pins = 2
+    property failures = 0
+
+Total errors = 2
+```
+
+### Exercise 3: LVS with Blackboxes Subcircuits
+
+Change to `exercise_3` directory.
+
+```shell
+$ ls
+netA.spice  netB.spice	run_lvs.s
+```
+
+There are now subcircuit definitions for all cells.
+
+```shell
+$ cat netA.spice 
+* Example SPICE netlist netA.spice
+*
+.subckt cell1 A B C
+.ends
+
+.subckt cell2 A B C
+.ends
+
+.subckt cell3 A B C
+.ends
+
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+
+$ cat netB.spice 
+* Example SPICE netlist netB.spice
+*
+.subckt cell1 A B C
+.ends
+
+.subckt cell2 A B C
+.ends
+
+.subckt cell3 A B C
+.ends
+
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+```
+
+Netgen automatically handles blackbox cells using reasonable assumptions (assuming correct pin names and order).
+
+```shell
+$ source run_lvs.sh 
+Netgen 1.5.196 compiled on Thu Aug  5 04:55:33 UTC 2021
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Generating JSON file result
+Reading netlist file netA.spice
+Reading netlist file netB.spice
+Reading setup file /usr/share/pdk/sky130A/libs.tech/netgen/sky130A_setup.tcl
+Comparison output logged to file exercise_3_comp.out
+Logging to file "exercise_3_comp.out" enabled
+Contents of circuit 1:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'cell1'
+Circuit cell1 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+
+Circuit cell1 contains no devices.
+Contents of circuit 1:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'cell2'
+Circuit cell2 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+
+Circuit cell2 contains no devices.
+Contents of circuit 1:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+Contents of circuit 2:  Circuit: 'cell3'
+Circuit cell3 contains 0 device instances.
+Circuit contains 0 nets, and 3 disconnected pins.
+
+Circuit cell3 contains no devices.
+Contents of circuit 1:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+Contents of circuit 2:  Circuit: 'test'
+Circuit test contains 3 device instances.
+  Class: cell1                 instances:   1
+  Class: cell2                 instances:   1
+  Class: cell3                 instances:   1
+Circuit contains 3 nets.
+
+Circuit 1 contains 3 devices, Circuit 2 contains 3 devices.
+Circuit 1 contains 3 nets,    Circuit 2 contains 3 nets.
+
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "exercise_3_comp.out" disabled
+LVS Done.
+
+LVS reports no net, device, pin, or property mismatches.
+
+Total errors = 0
+```
+
+```shell
+$ cat exercise_3_comp.out 
+
+Cell cell1 disconnected node: A
+Cell cell1 disconnected node: B
+Cell cell1 disconnected node: C
+
+Cell cell1 disconnected node: A
+Cell cell1 disconnected node: B
+Cell cell1 disconnected node: C
+Equate pins:  cell cell1 and/or cell1 has no elements.
+
+Subcircuit pins:
+Circuit 1: cell1                           |Circuit 2: cell1                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell1 and cell1 are equivalent.
+
+Cell cell2 disconnected node: A
+Cell cell2 disconnected node: B
+Cell cell2 disconnected node: C
+
+Cell cell2 disconnected node: A
+Cell cell2 disconnected node: B
+Cell cell2 disconnected node: C
+Equate pins:  cell cell2 and/or cell2 has no elements.
+
+Subcircuit pins:
+Circuit 1: cell2                           |Circuit 2: cell2                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell2 and cell2 are equivalent.
+
+Cell cell3 disconnected node: A
+Cell cell3 disconnected node: B
+Cell cell3 disconnected node: C
+
+Cell cell3 disconnected node: A
+Cell cell3 disconnected node: B
+Cell cell3 disconnected node: C
+Equate pins:  cell cell3 and/or cell3 has no elements.
+
+Subcircuit pins:
+Circuit 1: cell3                           |Circuit 2: cell3                           
+-------------------------------------------|-------------------------------------------
+A                                          |A                                          
+B                                          |B                                          
+C                                          |C                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cell3 and cell3 are equivalent.
+
+Subcircuit summary:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+cell1 (1)                                  |cell1 (1)                                  
+cell2 (1)                                  |cell2 (1)                                  
+cell3 (1)                                  |cell3 (1)                                  
+Number of devices: 3                       |Number of devices: 3                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+Circuits match uniquely.
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: test                            |Circuit 2: test                            
+-------------------------------------------|-------------------------------------------
+C                                          |C                                          
+B                                          |B                                          
+A                                          |A                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes test and test are equivalent.
+Circuits match uniquely.
+```
+
+Now change pin order in `netA.spice` from A B C to C B A
+
+```shell
+.subckt cell1 C B A
+.ends
+```
+
+For blacboxes netgen insists that pin order/names are the same.
+
+```shell
+$ ./run_lvs.sh
+...
+LVS file exercise_3_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 3
+    unmatched devices = 1
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 4
+```
+
+Netgen interprets the netlist such that it thinks netA is missing pin C and netB is missing pin D.
+
+Now rename cell1 to cell4
+
+```shell
+* Example SPICE netlist netA.spice
+*
+.subckt cell4 A B C
+.ends
+
+.subckt cell2 A B C
+.ends
+
+.subckt cell3 A B C
+.ends
+
+.subckt test A B C
+X1 A B C cell4
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+```
+
+Rerun `./run_lvs.sh` gives a good result. This is due to flattening of (empty) cells.
+To fix this tell netgen to treat empty cells as blackbox and no flatten them.
+
+```shell
+$ cat run_lvs.sh 
+#!/bin/sh
+netgen -batch lvs "netA.spice test" "netB.spice test" \
+/usr/share/pdk/sky130A/libs.tech/netgen/sky130A_setup.tcl \
+exercise_3_comp.out -json -blackbox | tee lvs.log
+echo ""
+../count_lvs.py | tee -a lvs.log
+```
+
+```shell
+$ ./run_lvs.sh
+...
+LVS file exercise_3_comp.json reports:
+    net count difference = 0
+    device count difference = 2
+    unmatched nets = 3
+    unmatched devices = 1
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 6
+```
+
+From exercise3_comp.out
+
+```shell
+...
+
+Circuit 1: test                            |Circuit 2: test
+-------------------------------------------|-------------------------------------------
+cell4 (1)                                  |(no matching element)
+cell2 (1)                                  |cell2 (1)
+cell3 (1)                                  |cell3 (1)
+(no matching element)                      |cell1 (1)
+Number of devices: 3                       |Number of devices: 3
+Number of nets: 3                          |Number of nets: 3
+
+...
+```
+
+
+### Exercise 4: LVS with SPICE Low Level Components
+
+```shell
+exercise_4$ ls
+netA.spice  netB.spice	run_lvs.sh
+```
+
+The example consists of random netlists using SPICE components.
+
+```shell
+$ cat netA.spice 
+* Example SPICE netlist netA.spice
+*
+.subckt cell1 A B C
+R1 A B 100
+R2 B C 100
+.ends
+
+.subckt cell2 A B C
+C1 A B 1E-12
+C2 B C 1E-12
+.ends
+
+.subckt cell3 A B C
+D1 A B diode
+D2 B C diode
+.ends
+
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+andreas.mueller2207@pv-workshop-01:~/workspace/vsd_lvs_lab/exercise_4$ cat netB.spice 
+* Example SPICE netlist netB.spice
+*
+.subckt cell1 A B C
+R1 A B 100
+R2 B C 100
+.ends
+
+.subckt cell2 A B C
+C1 A B 1E-12
+C2 B C 1E-12
+.ends
+
+.subckt cell3 A B C
+D1 A B diode
+D2 B C diode
+.ends
+
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+```
+
+Edit `netA.spice` again and also swap pins on cell3.
+
+```shell
+$ cat netA.spice
+* Example SPICE netlist netA.spice
+*
+.subckt cell1 C B A
+R1 A B 100
+R2 B C 100
+.ends
+
+.subckt cell2 A B C
+C1 A B 1E-12
+C2 B C 1E-12
+.ends
+
+.subckt cell3 C B A
+D1 C B diode
+D2 B A diode
+.ends
+
+.subckt test A B C
+X1 A B C cell1
+X2 A B A cell2
+X3 C C A cell3
+.ends
+.end
+```
+
+Now LVS does match.
+
+```shell
+$ ./run_lvs.sh
+...
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "exercise_4_comp.out" disabled
+LVS Done.
+
+LVS reports no net, device, pin, or property mismatches.
+
+Total errors = 0
+```
+
+### Exercise 5: LVS for Small Analog Bloock, Power-On-Reset
+
+The next exercise uses an example analog circuit, taken from the caravel project example.
+
+```shell
+$ ls
+mag  netgen  xschem
+
+$ ls xschem/
+analog_wrapper_tb.sch  example_por.sym	   user_analog_project_wrapper.sch  xschemrc
+example_por.sch        example_por_tb.sch  user_analog_project_wrapper.sym
+
+$ ls mag/
+example_por.mag				 sky130_fd_pr__pfet_g5v0d10v5_YEUEBV.mag
+run_magic				 sky130_fd_pr__pfet_g5v0d10v5_YUHPBG.mag
+sky130_fd_pr__cap_mim_m3_1_WRT4AW.mag	 sky130_fd_pr__pfet_g5v0d10v5_YUHPXE.mag
+sky130_fd_pr__cap_mim_m3_2_W5U4AW.mag	 sky130_fd_pr__pfet_g5v0d10v5_ZEUEFZ.mag
+sky130_fd_pr__nfet_g5v0d10v5_PKVMTM.mag  sky130_fd_pr__res_xhigh_po_0p69_S5N9F3.mag
+sky130_fd_pr__nfet_g5v0d10v5_TGFUGS.mag  user_analog_proj_example.mag
+sky130_fd_pr__nfet_g5v0d10v5_ZK8HQC.mag  user_analog_project_wrapper.mag
+sky130_fd_pr__pfet_g5v0d10v5_3YBPVB.mag  user_analog_project_wrapper_empty.mag
+
+$ ls netgen/
+run_lvs_por.sh	run_lvs_wrapper.sh
+```
+
+Power-on reset circuit.
+
+Initially we have not netlist. So create it from the schematic.
+
+Then continue with Magic
+
+```shell
+$ cd ../mag
+$ ./run_magic
+...
+```
+
+Extract the netlist from the layout in Magic using the know command sequence.
+
+```shell
+extract do local
+extract all
+ext2spice lvs
+ext2spice
+```
+
+Then run the provided `run_lvs_wrapper.sh` script, which performs LVS with netgen.
+
+```shell
+$ ./run_lvs_wrapper.sh
+...
+LVS file wrapper_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 2
+    unmatched devices = 0
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 2
+```
+
+Then have a look at the output of netgen. Clearly there is something wrong.
+In the schematic, the standard cells are not included in the netlist and are traeted as blackboxes.
+In the layout, the standard cells are included in the netlist.
+This causes a lot of proxy pins.
+
+```shell
+$ cat wrapper_comp.out
+...
+Subcircuit pins:
+Circuit 1: sky130_fd_sc_hvl__buf_8         |Circuit 2: sky130_fd_sc_hvl__buf_8
+-------------------------------------------|-------------------------------------------
+(no matching pin)                          |1
+(no matching pin)                          |2
+(no matching pin)                          |3
+(no matching pin)                          |4
+(no matching pin)                          |5
+(no matching pin)                          |6
+A                                          |(no matching pin)
+VGND                                       |(no matching pin)
+VNB                                        |(no matching pin)
+VPB                                        |(no matching pin)
+VPWR                                       |(no matching pin)
+X                                          |(no matching pin)
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes sky130_fd_sc_hvl__buf_8 and sky130_fd_sc_hvl__buf_8 are equivalent.
+Warning: Equate pins:  cell sky130_fd_sc_hvl__schmittbuf_1 has no definition, treated as a black box.
+...
+```
+
+To fix this use the testbench and extract the analog_wrapper subcircuit from there.
+Disable the "top level as subcircuit option" in xschem when doing this.
+Note that the testbench contains spice commands to include the cell model definitions.
+
+Edit the `run_lvs_wrapper.sh` to point to the new spice netlist (with _tb suffix).
+Or copy and rename the script before doing the edit.
+
+```shell
+./run_lvs_wrapper_tb.sh
+...
+LVS Done.
+
+LVS file wrapper_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 0
+    unmatched devices = 0
+    unmatched pins = 11
+    property failures = 0
+
+Total errors = 11
+```
+
+```shell
+$ ./run_lvs_por.sh
+...
+Combined 20 series devices.
+Combined 6 series devices.
+Combined 7 parallel devices.
+Combined 7 parallel devices.
+Combined 8 parallel devices.
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "por_comp.out" disabled
+LVS Done.
+
+LVS reports no net, device, pin, or property mismatches.
+
+Total errors = 0
+```
+
+Note the parameterized cells in the netlist, named sky130_fd_pr__pfet_g5v0d10v5_NDOJKFS (random/hash string at the end).
+These introduce additional layer of hierarchy which is unwanted.
+
+### Exercise 6: LVS Layout vs. Verilog for Standard Cell
+
+How to run layout vs Verilog.
+When using Openlane it usually runs LVS for you.
+
+```shell
+exercise_6$ ls
+mag  netgen  verilog
+
+$ ls mag/
+digital_pll.mag  run_magic
+
+$ ls netgen/
+run_lvs.sh
+
+$ ls verilog/
+digital_pll.v  source
+```
+
+Looking at the Verilog file shows it is just a flat structural Verilog module
+which instantiates the primitive cells.
+
+```shell
+$ cat ./verilog/digital_pll.v
+...
+ sky130_fd_sc_hd__decap_6 FILLER_26_129 (.VGND(VGND),
+    .VNB(VGND),
+    .VPB(VPWR),
+    .VPWR(VPWR));
+ sky130_fd_sc_hd__fill_1 FILLER_26_135 (.VGND(VGND),
+    .VNB(VGND),
+    .VPB(VPWR),
+    .VPWR(VPWR));
+endmodule
+```
+
+Do the inital run for LVS.
+
+```shell
+$ cd ./netgen
+$ ./run_lvs.sh
+...
+LVS Done.
+
+LVS file exercise_6_comp.json reports:
+    net count difference = 0
+    device count difference = 3
+    unmatched nets = 18
+    unmatched devices = 53
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 74
+```
+
+Add `export MAGIC_EXT_USE_GDS=1` to `./run_lvs.sh` (at the top before netgen is called) and run it again.
+
+```shell
+$ ./run_lvs.sh
+...
+
+LVS Done.
+
+LVS reports no net, device, pin, or property mismatches.
+
+Total errors = 0
+```
+
+All good now.
+
+### Exercise 7: LVS for Macros
+
+```shell
+exercise_7$ ls
+mag  netgen  verilog
+
+$ ls mag/
+mgmt_protect.mag  mgmt_protect_hv.mag  mprj2_logic_high.mag  mprj_logic_high.mag  run_magic
+
+$ ls netgen/
+run_lvs.sh
+
+$ ls verilog/
+gl  mgmt_protect.v  mgmt_protect_hv.v
+```
+
+Run extraction on mag file to get spice netlist of layout.
+
+```shell
+$ ./run_lvs.sh
+...
+Creating placeholder cell definition for module sky130_fd_sc_hd__einvp_8.
+Module 'mgmt_protect' is not structural verilog, making black-box.
+Cannot find cell mgmt_protect in file ../verilog/mgmt_protect.v
+
+JSON file exercise_7_comp.json not found.
+Usage:  count_lvs.py [filename]
+```
+
+Did not get very far.
+Inspect verilog code.
+
+```shell
+$ ./run_lvs.sh
+...
+LVS Done.
+
+LVS file exercise_7_comp.json reports:
+    net count difference = 2
+    device count difference = 0
+    unmatched nets = 3
+    unmatched devices = 2
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 7
+```
+
+Issue is about gnd connection of power ring and substrate.
+In the layout netlist the grounds are all connected together.
+For example how to handle substrate, is all one ground net, or a mesh of resistors.
+
+Some cells in Verilog code are connected to vssd1, vssa2, etc.
+
+Some disatisfactory workaround exists. Edit verilog code so ground nets are connected together.
+
+```shell
+$ tail ../verilog/gl/mgmt_protect.v 
+ sky130_fd_sc_hd__fill_2 FILLER_38_2362 (.VGND(vssd),
+    .VNB(vssd),
+    .VPB(vccd),
+    .VPWR(vccd));
+
+assign vssa1 = vssd;
+assign vssa2 = vssd;
+assign vssd1 = vssd;
+assign vssd2 = vssd;
+
+endmodule
+```
+
+### Exercise 8: LVS Digital PLL
+
+```shell
+exercise_8$ ls
+mag  netgen  verilog
+
+$ ls mag/
+digital_pll.mag  run_magic
+
+$ ls netgen/
+run_lvs.sh
+
+$ ls verilog/
+digital_pll.v
+```
+
+Start by extracting the layout netlist with Magic.
+
+```shell
+$ cd ./netgen
+$ ./run_lvs.sh
+...
+LVS Done.
+
+LVS file exercise_8_comp.json reports:
+    net count difference = 1
+    device count difference = 7
+    unmatched nets = 11
+    unmatched devices = 47
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 66
+```
+
+Apply the same change as in Exercise 6, add variable `export MAGIC_EXT_USE_GDS=1`.
+
+```shell
+$ ./run_lvs.sh
+...
+LVS Done.
+
+LVS file exercise_8_comp.json reports:
+    net count difference = 1
+    device count difference = 4
+    unmatched nets = 11
+    unmatched devices = 47
+    unmatched pins = 0
+    property failures = 0
+
+Total errors = 63
+```
+
+Fix the missing diode by inserting it in the Verilog file.
+
+```shell
+sky130_fd_sc_hd__diode_2 sky130_fd_sc_hd__diode_2_0 (
+  .DIODE(dco),
+  .VGND(VGND),
+  .VNB(VGND),
+  .VPB(VPWR),
+  .VPWR(VPWR));
+);
+```
+
+Still errors for decap cells. Power network issues are tough since they are global nets and touch everything.
+
+```shell
+
+```
+
+Fix the power connection in Magic, extract again, and rerun netgen LVS.
+
+Rule of thumb, assume layout is incorrect, when spice netlist has been simulated and was functionally correct.
+
+### Exercise 9: LVS with Property Errors
+
+```shell
+exercise_9$ ls
+mag  netgen  xschem
+
+$ ls mag/
+example_por.mag				 sky130_fd_pr__nfet_g5v0d10v5_ZK8HQC.mag
+run_magic				 sky130_fd_pr__pfet_g5v0d10v5_3YBPVB.mag
+sky130_fd_pr__cap_mim_m3_1_LQJW4T.mag	 sky130_fd_pr__pfet_g5v0d10v5_YEUEBV.mag
+sky130_fd_pr__cap_mim_m3_2_L4HW4T.mag	 sky130_fd_pr__pfet_g5v0d10v5_YUHPBG.mag
+sky130_fd_pr__nfet_g5v0d10v5_8KW54N.mag  sky130_fd_pr__pfet_g5v0d10v5_YUHPXE.mag
+sky130_fd_pr__nfet_g5v0d10v5_C7FJU8.mag  sky130_fd_pr__pfet_g5v0d10v5_ZEUEFZ.mag
+sky130_fd_pr__nfet_g5v0d10v5_TGFUGS.mag  sky130_fd_pr__res_xhigh_po_0p69_PBQTMM.mag
+
+$ ls netgen/
+run_lvs_por.sh
+
+$ ls xschem/
+example_por.sch  example_por.sym  example_por_tb.sch  xschemrc
+```
+
+Do netlist extraction for layout and schematic.
+
+```shell
+$ cd ./netgen
+$ ./run_lvs_por.sh
+...
+LVS Done.
+
+LVS file exercise_9_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 0
+    unmatched devices = 0
+    unmatched pins = 0
+    property failures = 6
+
+Total errors = 6
+```
+
+```shell
+# From exercise_9_comp.out
+...
+There were property errors.
+sky130_fd_pr__cap_mim_m3_2_L4HW4T_0/sky130_fd_pr__cap_mim_m3_20 vs. sky130_fd_pr__cap_mim_m3_2C2:
+ l circuit1: 28   circuit2: 30   (delta=6.9%, cutoff=1%)
+sky130_fd_pr__res_xhigh_po_0p69_PBQTMM_0/sky130_fd_pr__res_xhigh_po_0p696 vs. sky130_fd_pr__res_xhigh_po_0p69R1:
+ l circuit1: 460   circuit2: 500   (delta=8.33%, cutoff=1%)
+sky130_fd_pr__res_xhigh_po_0p69_PBQTMM_0/sky130_fd_pr__res_xhigh_po_0p6922 vs. sky130_fd_pr__res_xhigh_po_0p69R2:
+ l circuit1: 138   circuit2: 150   (delta=8.33%, cutoff=1%)
+sky130_fd_pr__res_xhigh_po_0p69_PBQTMM_0/sky130_fd_pr__res_xhigh_po_0p692 vs. sky130_fd_pr__res_xhigh_po_0p69R3:
+ l circuit1: 23   circuit2: 25   (delta=8.33%, cutoff=1%)
+sky130_fd_pr__cap_mim_m3_1_LQJW4T_0/sky130_fd_pr__cap_mim_m3_10 vs. sky130_fd_pr__cap_mim_m3_1C1:
+ l circuit1: 28   circuit2: 30   (delta=6.9%, cutoff=1%)
+sky130_fd_pr__nfet_g5v0d10v5_8KW54N_0/sky130_fd_pr__nfet_g5v0d10v50 vs. sky130_fd_pr__nfet_g5v0d10v5M2:
+ w circuit1: 4   circuit2: 2   (delta=66.7%, cutoff=1%)
+...
+```
+
+Need to edit either schematic or the layout for them to match up.
+Usually update schematic to match the layout, usually the layout has to make some compromise which is not yet back-annotated to the schematic.
+
+Fix width properties in schematic to match layout.
+
+```shell
+$ ./run_lvs_por.sh
+...
+LVS Done.
+
+LVS file exercise_9_comp.json reports:
+    net count difference = 0
+    device count difference = 0
+    unmatched nets = 0
+    unmatched devices = 0
+    unmatched pins = 0
+    property failures = 1
+
+Total errors = 1
+```
+
+Only one error left.
+
+Edit magic layout and change property (Ctrl+P) of the affected cell to have only 1 finger instead of 2.
+No new DRC errrors pop up after changing the property, which is nice.
+
+```
+$ ./run_lvs.sh
+...
+Circuit 1 contains 20 devices, Circuit 2 contains 20 devices.
+Circuit 1 contains 16 nets,    Circuit 2 contains 16 nets.
+
+Combined 20 series devices.
+Combined 6 series devices.
+Combined 7 parallel devices.
+Combined 7 parallel devices.
+Combined 8 parallel devices.
+Netlists match uniquely.
+Result: Circuits match uniquely.
+Logging to file "exercise_9_comp.out" disabled
+LVS Done.
+
+LVS reports no net, device, pin, or property mismatches.
+
+Total errors = 0
+```
+
+And LVS passes with 0 errors.
+Bingo.
+
+## All Done
+
 ---
 
 ## References:
@@ -986,6 +2493,8 @@ netgen GUI exists, nice for some things.
 [1] https://antmicro-skywater-pdk-docs.readthedocs.io/en/latest/rules.html  
 [2] http://opencircuitdesign.com/magic/index.html  
 [3] http://opencircuitdesign.com/open_pdks/index.html  
-[19] https://wikipedia.org, I guess ... why not  
-[20] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
-[21] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
+[4] http://opencircuitdesign.com/netgen/  
+[5] https://openlane.readthedocs.io/en/latest/index.html  
+[6] https://wikipedia.org, I guess ... why not  
+[7] https://thesis.library.caltech.edu/1101/1/Whitney_te_1985.pdf  
+[8] https://boolean.klassholwerda.nl/interface/bnf/gdsformat.html (site down)  
