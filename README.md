@@ -2486,6 +2486,8 @@ Bingo.
 
 ## All Done
 
+I want to thank myself for having had the discipline and patience to complete this workshop in my own free time when I could have done nothing instead. I'm awesome.
+
 ---
 
 ## References:
